@@ -1,0 +1,5 @@
+homepage: "https://cellwall.io"
+documentation: "https://cellwall.io/resources/blog/gtm-installation"
+versions:
+  - sha: "PLACEHOLDER_SHA" # You will replace this with the Git commit SHA when you fork the GTM Gallery repo.
+    change_notes: "Initial release of CellWall Cookie Consent tag."
