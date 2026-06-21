@@ -3,7 +3,7 @@
 Official Google Tag Manager (GTM) template for **CellWall**. This template provides a zero-code way to deploy the CellWall security and compliance engine to your website.
 
 ## Quick Links
-- **[Installation Guide](https://cellwall.io/blog/gtm-installation)** – Step-by-step setup instructions.
+- **[Installation Guide](https://cellwall.io/en/resources/blog/gtm-installation)** – Step-by-step setup instructions.
 - **[CellWall Dashboard](https://platform.cellwall.io/)** – Get your Project ID here.
 - **[Official Website](https://cellwall.io)** – Learn more about SiteWall and CookieWall.
 

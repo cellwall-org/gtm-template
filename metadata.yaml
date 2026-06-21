@@ -1,5 +1,5 @@
 homepage: "https://cellwall.io"
-documentation: "https://cellwall.io/resources/blog/gtm-installation"
+documentation: "https://cellwall.io/en/resources/blog/gtm-installation"
 versions:
   - sha: "2b376717c0fedc1d52320d2e083cc6ccd2b50499"
     change_notes: "Initial release of CellWall Cookie Consent tag."
