@@ -1,4 +1,4 @@
-___TERMS_OF_SERVICE___
+﻿___TERMS_OF_SERVICE___
 
 By creating or modifying this file you agree to Google Tag Manager's Community
 Template Gallery Developer Terms of Service available at
@@ -13,7 +13,7 @@ ___INFO___
   "id": "cvt_temp_public_id",
   "version": 1,
   "securityGroups": [],
-  "displayName": "CellWall - universal",
+  "displayName": "CellWall Cookie Consent",
   "categories": ["UTILITY", "TAG_MANAGEMENT"],
   "brand": {
     "id": "brand_dummy",
@@ -41,22 +41,59 @@ ___TEMPLATE_PARAMETERS___
 
 ___SANDBOXED_JS_FOR_WEB_TEMPLATE___
 
+const callInWindow = require('callInWindow');
 const injectScript = require('injectScript');
 const log = require('logToConsole');
+const setDefaultConsentState = require('setDefaultConsentState');
 const setInWindow = require('setInWindow');
-  
-// 1. Set the Configuration object on the window
-const config = {
-  projectId: data.projectId
-};
-setInWindow('cellwallConfig', config, true);
-  
-// 2. Inject the main bundle
-const url = 'https://snippet.cellwall.io/bundle.js';
+const updateConsentState = require('updateConsentState');
 
+const toConsentState = (preferences) => {
+  const marketing = preferences['Marketing'] === true;
+  const analytics = preferences['Analytics'] === true;
+  const functional = preferences['Functional'] === true;
+
+  return {
+    ad_storage: marketing ? 'granted' : 'denied',
+    ad_user_data: marketing ? 'granted' : 'denied',
+    ad_personalization: marketing ? 'granted' : 'denied',
+    analytics_storage: analytics ? 'granted' : 'denied',
+    functionality_storage: functional ? 'granted' : 'denied',
+    personalization_storage: functional ? 'granted' : 'denied',
+    security_storage: 'granted'
+  };
+};
+
+const onUserConsent = (preferences) => {
+  if (preferences) {
+    updateConsentState(toConsentState(preferences));
+  }
+};
+
+setDefaultConsentState({
+  ad_storage: 'denied',
+  ad_user_data: 'denied',
+  ad_personalization: 'denied',
+  analytics_storage: 'denied',
+  functionality_storage: 'denied',
+  personalization_storage: 'denied',
+  security_storage: 'granted',
+  wait_for_update: 500
+});
+
+setInWindow('cellwallConfig', {
+  projectId: data.projectId,
+  gtmConsentMode: true
+}, true);
+
+const url = 'https://snippet.cellwall.io/bundle.js';
 log('CellWall: Initializing for Project ID: ' + data.projectId);
 
-injectScript(url, data.gtmOnSuccess, data.gtmOnFailure, 'cellwall-js');
+injectScript(url, () => {
+  callInWindow('CellWallConsent.addConsentListener', onUserConsent);
+  onUserConsent(callInWindow('CellWallConsent.getPreferences'));
+  data.gtmOnSuccess();
+}, data.gtmOnFailure, 'cellwall-js');
 
 
 ___WEB_PERMISSIONS___
@@ -68,7 +105,61 @@ ___WEB_PERMISSIONS___
         "publicId": "access_globals",
         "versionId": "1"
       },
-      "param": []
+      "param": [
+        {
+          "key": "keys",
+          "value": {
+            "type": 2,
+            "listItem": [
+              {
+                "type": 3,
+                "mapKey": [
+                  { "type": 1, "string": "key" },
+                  { "type": 1, "string": "read" },
+                  { "type": 1, "string": "write" },
+                  { "type": 1, "string": "execute" }
+                ],
+                "mapValue": [
+                  { "type": 1, "string": "cellwallConfig" },
+                  { "type": 8, "boolean": false },
+                  { "type": 8, "boolean": true },
+                  { "type": 8, "boolean": false }
+                ]
+              },
+              {
+                "type": 3,
+                "mapKey": [
+                  { "type": 1, "string": "key" },
+                  { "type": 1, "string": "read" },
+                  { "type": 1, "string": "write" },
+                  { "type": 1, "string": "execute" }
+                ],
+                "mapValue": [
+                  { "type": 1, "string": "CellWallConsent.addConsentListener" },
+                  { "type": 8, "boolean": false },
+                  { "type": 8, "boolean": false },
+                  { "type": 8, "boolean": true }
+                ]
+              },
+              {
+                "type": 3,
+                "mapKey": [
+                  { "type": 1, "string": "key" },
+                  { "type": 1, "string": "read" },
+                  { "type": 1, "string": "write" },
+                  { "type": 1, "string": "execute" }
+                ],
+                "mapValue": [
+                  { "type": 1, "string": "CellWallConsent.getPreferences" },
+                  { "type": 8, "boolean": false },
+                  { "type": 8, "boolean": false },
+                  { "type": 8, "boolean": true }
+                ]
+              }
+            ]
+          }
+        }
+      ]
     },
     "isRequired": true
   },
@@ -78,7 +169,127 @@ ___WEB_PERMISSIONS___
         "publicId": "inject_script",
         "versionId": "1"
       },
-      "param": []
+      "param": [
+        {
+          "key": "urls",
+          "value": {
+            "type": 2,
+            "listItem": [
+              { "type": 1, "string": "https://snippet.cellwall.io/bundle.js" }
+            ]
+          }
+        }
+      ]
+    },
+    "isRequired": true
+  },
+  {
+    "instance": {
+      "key": {
+        "publicId": "access_consent",
+        "versionId": "1"
+      },
+      "param": [
+        {
+          "key": "consentTypes",
+          "value": {
+            "type": 2,
+            "listItem": [
+              {
+                "type": 3,
+                "mapKey": [
+                  { "type": 1, "string": "consentType" },
+                  { "type": 1, "string": "read" },
+                  { "type": 1, "string": "write" }
+                ],
+                "mapValue": [
+                  { "type": 1, "string": "ad_storage" },
+                  { "type": 8, "boolean": false },
+                  { "type": 8, "boolean": true }
+                ]
+              },
+              {
+                "type": 3,
+                "mapKey": [
+                  { "type": 1, "string": "consentType" },
+                  { "type": 1, "string": "read" },
+                  { "type": 1, "string": "write" }
+                ],
+                "mapValue": [
+                  { "type": 1, "string": "ad_user_data" },
+                  { "type": 8, "boolean": false },
+                  { "type": 8, "boolean": true }
+                ]
+              },
+              {
+                "type": 3,
+                "mapKey": [
+                  { "type": 1, "string": "consentType" },
+                  { "type": 1, "string": "read" },
+                  { "type": 1, "string": "write" }
+                ],
+                "mapValue": [
+                  { "type": 1, "string": "ad_personalization" },
+                  { "type": 8, "boolean": false },
+                  { "type": 8, "boolean": true }
+                ]
+              },
+              {
+                "type": 3,
+                "mapKey": [
+                  { "type": 1, "string": "consentType" },
+                  { "type": 1, "string": "read" },
+                  { "type": 1, "string": "write" }
+                ],
+                "mapValue": [
+                  { "type": 1, "string": "analytics_storage" },
+                  { "type": 8, "boolean": false },
+                  { "type": 8, "boolean": true }
+                ]
+              },
+              {
+                "type": 3,
+                "mapKey": [
+                  { "type": 1, "string": "consentType" },
+                  { "type": 1, "string": "read" },
+                  { "type": 1, "string": "write" }
+                ],
+                "mapValue": [
+                  { "type": 1, "string": "functionality_storage" },
+                  { "type": 8, "boolean": false },
+                  { "type": 8, "boolean": true }
+                ]
+              },
+              {
+                "type": 3,
+                "mapKey": [
+                  { "type": 1, "string": "consentType" },
+                  { "type": 1, "string": "read" },
+                  { "type": 1, "string": "write" }
+                ],
+                "mapValue": [
+                  { "type": 1, "string": "personalization_storage" },
+                  { "type": 8, "boolean": false },
+                  { "type": 8, "boolean": true }
+                ]
+              },
+              {
+                "type": 3,
+                "mapKey": [
+                  { "type": 1, "string": "consentType" },
+                  { "type": 1, "string": "read" },
+                  { "type": 1, "string": "write" }
+                ],
+                "mapValue": [
+                  { "type": 1, "string": "security_storage" },
+                  { "type": 8, "boolean": false },
+                  { "type": 8, "boolean": true }
+                ]
+              }
+            ]
+          }
+        }
+      ]
     },
     "isRequired": true
   },
@@ -105,11 +316,52 @@ ___WEB_PERMISSIONS___
 
 ___TESTS___
 
-scenarios: []
+scenarios:
+- name: Sets restrictive defaults before loading CellWall
+  code: |-
+    runCode(mockData);
+    assertApi('setDefaultConsentState').wasCalledWith({
+      ad_storage: 'denied',
+      ad_user_data: 'denied',
+      ad_personalization: 'denied',
+      analytics_storage: 'denied',
+      functionality_storage: 'denied',
+      personalization_storage: 'denied',
+      security_storage: 'granted',
+      wait_for_update: 500
+    });
+    assertApi('injectScript').wasCalled();
+- name: Maps CellWall preferences to Google consent states
+  code: |-
+    let consentListener;
+    mock('callInWindow', (path, callback) => {
+      if (path === 'CellWallConsent.addConsentListener') consentListener = callback;
+      if (path === 'CellWallConsent.getPreferences') return null;
+    });
+    mock('injectScript', (url, onSuccess) => onSuccess());
+    runCode(mockData);
+    consentListener({
+      'Analytics': true,
+      'Marketing': false,
+      'Functional': true,
+      'Strictly Necessary': true
+    });
+    assertApi('updateConsentState').wasCalledWith({
+      ad_storage: 'denied',
+      ad_user_data: 'denied',
+      ad_personalization: 'denied',
+      analytics_storage: 'granted',
+      functionality_storage: 'granted',
+      personalization_storage: 'granted',
+      security_storage: 'granted'
+    });
+    assertApi('gtmOnSuccess').wasCalled();
+setup: |-
+  const mockData = {
+    projectId: 'project-123'
+  };
 
 
 ___NOTES___
 
 Created on 5/30/2026, 3:27:19 AM
-
-
