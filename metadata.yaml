@@ -1,5 +1,7 @@
 homepage: "https://cellwall.io"
 documentation: "https://cellwall.io/en/resources/blog/gtm-installation"
 versions:
+  - sha: "cd0026ccc351958c2c91e251865014835660c301"
+    change_notes: "Add Google Consent Mode v2 defaults and preference updates."
   - sha: "a3e8cfa98565a8bdf28e36f41824dcc1357ce9ef"
     change_notes: "Initial release of CellWall Cookie Consent tag."
